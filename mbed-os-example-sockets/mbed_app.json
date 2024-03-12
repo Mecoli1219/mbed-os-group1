@@ -5,7 +5,7 @@
             "value": "\"192.168.50.171\""
         },
         "use-tls-socket": {
-            "value": true
+            "value": false
         }
     },
     "target_overrides": {
