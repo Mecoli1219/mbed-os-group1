@@ -1,10 +1,14 @@
 import socket
 import json
 import numpy as np
-import matplotlib.pyplot as plot
+import matplotlib.pyplot as plt
 
-HOST = '192.168.50.171' # IP address
-PORT = 6531 # Port to listen on (use ports > 1023)
+HOST = '192.168.37.216'  # IP地址
+PORT = 6531  # 监听的端口（使用端口> 1023）
+
+plt.ion()  # 启用交互式模式
+graph = []
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
     s.listen()
@@ -12,20 +16,24 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     conn, addr = s.accept()
     with conn:
         print("Connected at", addr)
+        t = 0
         while True:
             data = conn.recv(1024)
-            print(data)
             data = data.decode('utf-8')
             print("Received from socket server:", data)
-            if (data.count('{') != 1):
-                # Incomplete data are received.
-                choose = 0
-                buffer_data = data.split('}')
-                while buffer_data[choose][0] != '{':
-                    choose += 1
-                data = buffer_data[choose] + '}'
             obj = json.loads(data)
-            t = obj['s']
-            plot.scatter(t, obj['x'], c='blue') # x, y, z, gx, gy, gz
-            plot.xlabel("sample num")
-            plot.pause(0.0001)
+            t = obj['sample_num']
+            x = obj['x']
+            y = obj['y']
+            z = obj['z']
+            graph.append([t, x, y, z])
+            
+            plt.clf()
+            graph_np = np.array(graph)
+            plt.plot(graph_np[:, 0], graph_np[:, 1], label='x')
+            plt.plot(graph_np[:, 0], graph_np[:, 2], label='y')
+            plt.plot(graph_np[:, 0], graph_np[:, 3], label='z')
+            plt.xlabel("Sample num")
+            plt.ylabel("Value")
+            plt.legend()
+            plt.pause(0.0001)

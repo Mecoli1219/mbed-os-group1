@@ -31,13 +31,13 @@
 #endif // MBED_CONF_APP_USE_TLS_SOCKET
 
 class SocketDemo {
-    static constexpr size_t MAX_NUMBER_OF_ACCESS_POINTS = 10;
+    static constexpr size_t MAX_NUMBER_OF_ACCESS_POINTS = 20;
     static constexpr size_t MAX_MESSAGE_RECEIVED_LENGTH = 100;
 
 #if MBED_CONF_APP_USE_TLS_SOCKET
     static constexpr size_t REMOTE_PORT = 6531; // tls port
 #else
-    static constexpr size_t REMOTE_PORT = 80; // standard HTTP port
+    static constexpr size_t REMOTE_PORT = 6531; // standard HTTP port
 #endif // MBED_CONF_APP_USE_TLS_SOCKET
 
 public:
@@ -117,25 +117,42 @@ public:
             printf("Error! _socket.connect() returned: %d\r\n", result);
             return;
         }
-        int sample_num = 0;
-        int16_t * 	pDataXYZ;
-        int SCALE_MULTIPLIER = 1;
-        char acc_json[500];
-        int response;
-
-        while (1){
-            ++sample_num;
-            BSP_ACCELERO_AccGetXYZ(pDataXYZ);
-            float x = pDataXYZ[0]*SCALE_MULTIPLIER, y = pDataXYZ[1]*SCALE_MULTIPLIER,
-            z = pDataXYZ[2]*SCALE_MULTIPLIER;
-            int len = sprintf(acc_json,"{\"x\":%f,\"y\":%f,\"z\":%f,\"s\":%d}",(float)((int)(x*10000))/10000,
-            (float)((int)(y*10000))/10000, (float)((int)(z*10000))/10000, sample_num);
-            response = _socket.send(acc_json,len);
-            if (0 >= response){
-            printf("Error seding: %d\n", response);
-            }
-            ThisThread::sleep_for(0.1);
-        } 
+        // int sample_num = 0;
+        // int16_t pDataXYZ[3]; 
+        // int SCALE_MULTIPLIER = 1;
+        // char acc_json[500];
+        // int response;
+        // BSP_ACCELERO_Init();
+        // while (1){
+        //     ++sample_num;
+        //     BSP_ACCELERO_AccGetXYZ(pDataXYZ);
+        //     // printf("pDataXYZ: {%d, %d, %d}\n", pDataXYZ[0], pDataXYZ[1], pDataXYZ[2]);
+        //     int len = sprintf(acc_json, "{\"x\":%d,\"y\":%d,\"z\":%d,\"s\":%d}", pDataXYZ[0], pDataXYZ[1], pDataXYZ[2], sample_num);
+        //     // printf("data: %s",acc_json);
+        //     response = _socket.send(acc_json,len);
+            
+        //     wait_us(1000000);
+        // } 
+    int sample_num = 0;
+    int16_t pDataXYZ[3]; 
+    int SCALE_MULTIPLIER = 1;
+    char acc_json[500];
+    int response;
+    BSP_ACCELERO_Init();
+    
+    while (1){
+        ++sample_num;
+        BSP_ACCELERO_AccGetXYZ(pDataXYZ);
+        printf("pDataXYZ: {%d, %d, %d}\n", pDataXYZ[0], pDataXYZ[1], pDataXYZ[2]);
+        snprintf(acc_json, sizeof(acc_json), "{\"sample_num\": %d, \"x\": %d, \"y\": %d, \"z\": %d}", 
+                 sample_num, pDataXYZ[0], pDataXYZ[1], pDataXYZ[2]);
+        response = _socket.send(acc_json, strlen(acc_json));
+        if (response < 0) {
+            printf("Failed to send data to server\n");
+        }
+        wait_us(1000000);
+    } 
+    
 
         /* exchange an HTTP request and response */
 
