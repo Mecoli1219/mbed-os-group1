@@ -3,7 +3,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-HOST = '192.168.37.216'  # IP地址
+HOST = '192.168.50.171'  # TODO: Update IP Address
 PORT = 6531  # 监听的端口（使用端口> 1023）
 
 plt.ion()  # 启用交互式模式
