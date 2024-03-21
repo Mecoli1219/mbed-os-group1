@@ -3,6 +3,14 @@ from bluepy.btle import Peripheral, UUID
 from bluepy.btle import Scanner, DefaultDelegate
 
 
+class NotificationDelegate(DefaultDelegate):
+    def __init__(self):
+        DefaultDelegate.__init__(self)
+
+    def handleNotification(self, cHandle, data):
+        print("Received notification: Handle={}, Data={}".format(cHandle, data.hex()))
+
+
 class ScanDelegate(DefaultDelegate):
     def __init__(self):
         DefaultDelegate.__init__(self)
@@ -49,6 +57,12 @@ try:
     ch = dev.getCharacteristics(uuid=UUID(0xFFF1))[0]
     if ch.supportsRead():
         print(ch.read())
+
+    dev.setDelegate(NotificationDelegate())
+
+    while True:
+        if dev.waitForNotifications(1.0):
+            continue
 #
 finally:
     dev.disconnect()
